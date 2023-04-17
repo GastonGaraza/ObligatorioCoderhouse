@@ -1,8 +1,8 @@
-// Maneja todo lo relacionado a los carritos en el sistema 
+// Maneja todo lo relacionado a los carritos en el sistema con sistema de archivos fs
 
 const fs = require('fs');
 const Cart = require('../models/cart.model');
-const ProductManager = require('./ProductManager');
+const ProductManager = require('./ProductManagerFS');
 const productManager = new ProductManager('./');
 
 class CartManager {

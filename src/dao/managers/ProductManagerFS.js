@@ -1,4 +1,4 @@
-// Maneja todo lo relacionado a los productos en el sistema 
+// Maneja todo lo relacionado a los productos en el sistema con sistema de archivos fs
 
 const fs = require('fs');
 

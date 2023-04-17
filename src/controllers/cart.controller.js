@@ -1,13 +1,13 @@
 // Controlador para manejar las rutas correspondientes al objeto carrito
 
-const CartManager = require('../managers/CartManager');
+const CartManager = require('../dao/managers/CartManagerMongo');
 const cartManager = new CartManager('./');
-const Cart = require('../models/cart.model');
+const Cart = require('../dao/models/carts.model');
 
 // Devuelve todos los carritos que estan en el sistema
 exports.getCart = async (req, res) => {  
     try {
-        const cid = parseInt(req.params.cid);
+        const cid = req.params.cid;
         const findedCart = await cartManager.getCartById(cid);
         res.send(findedCart);
       } catch (error) {
@@ -31,8 +31,8 @@ exports.addCart = async (req, res) => {
 exports.addCartItem = async (req, res) => {
     try {
         // Obtiene valores de parametros
-        const cid = parseInt(req.params.cid);
-        const pid = parseInt(req.params.pid);
+        const cid = req.params.cid;
+        const pid = req.params.pid;
         const quantity = !req.body.quantity ? 1 : req.body.quantity;
         // Agrega el producto al carrito
         const result = await cartManager.addCartItem(cid, pid, quantity);  

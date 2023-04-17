@@ -1,8 +1,8 @@
 // Controlador para manejar las rutas correspondientes al objeto producto
 
-const ProductManager = require('../managers/ProductManager');
+const ProductManager = require('../dao/managers/ProductManagerMongo');
 const productManager = new ProductManager('./');
-const Product = require('../models/product.model');
+const {product}  = require('../dao/models/products.model');
 
 // Devuelve todos los productos que estan en el sistema
 exports.getProducts = async  (req, res) => { 
@@ -24,7 +24,7 @@ exports.getProducts = async  (req, res) => {
 // Devuelve un producto con id igual a pid si este se encuentra en el sistema
 exports.getProduct = async (req, res) => {  
     try {
-        const pid = parseInt(req.params.pid);
+        const pid = req.params.pid;
         const findedProduct = await productManager.getProductById(pid);
         res.send(findedProduct);
       } catch (error) {
@@ -40,7 +40,7 @@ exports.addProduct = async (req, res) => {
         if (title && description && price && thumbnail && code && stock){
             const sameProduct = await productManager.checkProduct(code);
             if (!sameProduct){
-                const productToAdd = new Product(title, description, price, thumbnail, code, stock)
+                const productToAdd = new product(req.body)
                 const productAdded = await productManager.addProduct(productToAdd);
                 res.send(productAdded);
             }else{
@@ -60,7 +60,7 @@ exports.addProduct = async (req, res) => {
 exports.updateProduct = async (req, res) => {
     console.log(req.body);
     try {
-        const pid = parseInt(req.params.pid);
+        const pid = req.params.pid;
         const modifiedProduct = await productManager.updateProduct(pid, req.body)
         res.send(modifiedProduct);
     } catch (error) {
@@ -72,7 +72,7 @@ exports.updateProduct = async (req, res) => {
 // Elimina el producto con id igual a pid del sistema
 exports.deleteProduct = async (req, res) => {
     try {
-        const pid = parseInt(req.params.pid);
+        const pid = req.params.pid;
         const productToDelete = await productManager.deleteProduct(pid);
         res.send(productToDelete);
     } catch (error) {

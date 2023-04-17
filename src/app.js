@@ -4,12 +4,22 @@
 const express = require('express')
 const productRouter = require('./routes/product.router');
 const cartRouter = require('./routes/cart.router');
+const userRouter = require('./routes/user.router');
 const viewsRouter = require('./routes/views.router');
 
+const { objConfig } = require('./config/config.js')
+
 // Instancia de ProductManager
-const ProductManager = require('./managers/ProductManager');
-const productManager = new ProductManager('./');
-const Product = require('./models/product.model');
+const ProductManager = require('./dao/managers/ProductManagerMongo');
+const productManager = new ProductManager();
+const {product}  = require('./dao/models/products.model');
+
+// Instancia de MessageManager
+const MessageManager = require('./dao/managers/MessageManagerMongo');
+const messageManager = new MessageManager();
+const {message}  = require('./dao/models/message.model');
+
+objConfig.connectDB()
 
 // Servidor express
 const app = express()
@@ -32,6 +42,7 @@ app.use('/virtual', express.static(__dirname + '/public'));
 app.use('', viewsRouter);
 app.use('/api/products', productRouter);
 app.use('/api/carts', cartRouter);
+app.use('/api/users',  userRouter)
 
 const httpServer = app.listen(PORT, (err) => {
     if (err) return console.log(`Error running the server on port ${PORT}`)
@@ -58,7 +69,7 @@ socketIO.on('connection', async (socket) => {
         if (datos.title && datos.description && datos.price && datos.thumbnail && datos.code && datos.stock){
             const sameProduct = await productManager.checkProduct(datos.code);
             if (!sameProduct){
-                const productToAdd = new Product(datos.title, datos.description, datos.price, datos.thumbnail, datos.code, datos.stock)
+                let productToAdd = new product(datos);
                 const productAdded = await productManager.addProduct(productToAdd);
                 allProducts = await productManager.getProducts();
                 socketIO.emit('allProducts', allProducts);
@@ -67,8 +78,23 @@ socketIO.on('connection', async (socket) => {
             }  
     });
 
+    await socket.on('addMessage', async function (datos) {
+        if (datos.email && datos.message){
+            console.log("Email: " + datos.email);
+            let messageToAdd = new message(datos);
+            const messageAdded = await messageManager.addMessage(messageToAdd);
+            allMessages = await messageManager.getMessages();
+            socketIO.emit('allMessages', allMessages);
+        }
+    });
+
+    // socket.on('disconnect')
+    socket.on('authenticated', userEmail=>{
+        socket.broadcast.emit('newUserConnected',userEmail);
+    })
+
     // Handle Socket.io disconnections
     socket.on('disconnect', () => {
-        console.log('Client disconnected');
+        console.log('Client disconnected'); 
     });
 });
